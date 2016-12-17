@@ -14,12 +14,17 @@ import android.widget.TextView;
 
 import com.kiminonawa.mydiary.R;
 import com.kiminonawa.mydiary.db.DBManager;
+import com.kiminonawa.mydiary.shared.SPFManager;
 import com.kiminonawa.mydiary.shared.ThemeManager;
 import com.kiminonawa.mydiary.shared.gui.LetterComparator;
+import com.kiminonawa.mydiary.shared.statusbar.ChinaPhoneHelper;
+
+import net.sourceforge.pinyin4j.PinyinHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class ContactsActivity extends FragmentActivity implements View.OnClickListener,
         ContactsDetailDialogFragment.ContactsDetailCallback, LatterSortLayout.OnTouchingLetterChangedListener {
@@ -31,17 +36,25 @@ public class ContactsActivity extends FragmentActivity implements View.OnClickLi
     private long topicId;
 
     /**
+     * Sort
+     */
+
+    private String EN;
+    private String JA;
+    private String ZH_TW;
+    private String ZH_CN;
+    private String KO;
+
+    /**
      * UI
      */
     private ThemeManager themeManager;
-
     private RelativeLayout RL_contacts_content;
     private TextView IV_contacts_title;
     private EditText EDT_main_topic_search;
     private LatterSortLayout STL_contacts;
     private ImageView IV_contacts_add;
     private TextView TV_contact_short_sort;
-
 
     /**
      * DB
@@ -62,8 +75,12 @@ public class ContactsActivity extends FragmentActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
+        //For set status bar
+        ChinaPhoneHelper.setStatusBar(this, true);
+
 
         themeManager = ThemeManager.getInstance();
+        initLanguageStr();
 
         topicId = getIntent().getLongExtra("topicId", -1);
         if (topicId == -1) {
@@ -107,6 +124,16 @@ public class ContactsActivity extends FragmentActivity implements View.OnClickLi
         initTopicAdapter();
     }
 
+    private void initLanguageStr() {
+        EN = Locale.ENGLISH.getLanguage();
+        JA = Locale.JAPANESE.getLanguage();
+        ZH_TW = Locale.TAIWAN.getLanguage()
+                + "-" + Locale.TAIWAN.getCountry();
+        ZH_CN = Locale.CHINA.getLanguage()
+                + "-" + Locale.CHINA.getCountry();
+        KO = Locale.KOREAN.getLanguage();
+    }
+
     private void initTopbar() {
         EDT_main_topic_search.getBackground().setColorFilter(themeManager.getThemeMainColor(this),
                 PorterDuff.Mode.SRC_ATOP);
@@ -132,13 +159,34 @@ public class ContactsActivity extends FragmentActivity implements View.OnClickLi
     private void sortContacts() {
         for (ContactsEntity contactsEntity : contactsNamesList) {
             String sortString = contactsEntity.getName().substring(0, 1).toUpperCase();
-            if (sortString.matches("[A-Z]")) {
-                contactsEntity.setSortLetters(sortString.toUpperCase());
+            if (checkLanguage().equals(ZH_CN)) {
+                sortContactsCN(contactsEntity, sortString);
             } else {
-                contactsEntity.setSortLetters("#");
+                sortContactsEN(contactsEntity, sortString);
             }
         }
         Collections.sort(contactsNamesList, new LetterComparator());
+    }
+
+    private String sortContactsCN(ContactsEntity contactsEntity, String sortString) {
+        if (sortString.matches("[\\u4E00-\\u9FA5]")) {
+            String[] arr = PinyinHelper.toHanyuPinyinStringArray(sortString.trim().charAt(0));
+            sortString = arr[0].substring(0, 1).toUpperCase();
+        }
+        if (sortString.matches("[A-Z]")) {
+            contactsEntity.setSortLetters(sortString.toUpperCase());
+        } else {
+            contactsEntity.setSortLetters("#");
+        }
+        return sortString;
+    }
+
+    private void sortContactsEN(ContactsEntity contactsEntity, String sortString) {
+        if (sortString.matches("[A-Z]")) {
+            contactsEntity.setSortLetters(sortString.toUpperCase());
+        } else {
+            contactsEntity.setSortLetters("#");
+        }
     }
 
     private void initTopicAdapter() {
@@ -187,5 +235,47 @@ public class ContactsActivity extends FragmentActivity implements View.OnClickLi
         if (position != -1) {
             RecyclerView_contacts.getLayoutManager().scrollToPosition(position);
         }
+    }
+
+
+    /**
+     * This code is from array
+     * System = 0
+     * English = 1
+     * 日本語 = 2
+     * 繁體中文 = 3
+     * 简体中文= 4
+     * 한국어 = 5
+     */
+
+    private String checkLanguage() {
+        String language;
+        switch (SPFManager.getLocalLanguageCode(this)) {
+            //default = 0 = system
+            default:
+                language = getResources().getConfiguration().locale.getLanguage() +
+                        "-" + getResources().getConfiguration().locale.getCountry();
+                break;
+            case 1:
+                language = EN;
+                break;
+            case 2:
+                // JAPANESE;
+                language = JA;
+                break;
+            case 3:
+                //TRADITIONAL_CHINESE;
+                language = ZH_TW;
+                break;
+            case 4:
+                // SIMPLIFIED_CHINESE;
+                language = ZH_CN;
+                break;
+            case 5:
+                // SIMPLIFIED_CHINESE;
+                language = KO;
+                break;
+        }
+        return language;
     }
 }

@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.kiminonawa.mydiary.R;
+import com.kiminonawa.mydiary.shared.statusbar.ChinaPhoneHelper;
 
 /**
  * Created by daxia on 2016/12/1.
@@ -12,36 +13,46 @@ import com.kiminonawa.mydiary.R;
 
 public class AboutActivity extends AppCompatActivity {
 
-    private StringBuilder lincense;
+    private StringBuilder license;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //For set status bar
+        ChinaPhoneHelper.setStatusBar(this,true);
+
         setContentView(R.layout.activity_about);
-        lincense = new StringBuilder();
-        lincense.append("This open source project is coding by Daxia , see more information:\n\n" +
+        license = new StringBuilder();
+        license.append("This open source project is coding by Daxia , see more information:\n\n" +
                 "https://github.com/erttyy8821/MyDiary\n\n");
-        lincense.append("This project release by MIT License:\n");
-        lincense.append(
+        license.append("This project release by MIT License:\n");
+        license.append(
                 new LicenseObj("MyDiary", "Daxia", "2016", LicenseObj.MIT)
-                        .getLincense());
-        lincense.append("\nI use some lib from:\n");
-        lincense.append(
+                        .getLicense());
+        license.append("\nI use some lib from:\n");
+        license.append(
                 new LicenseObj("android-segmented-control", "Le Van Hoang", "2014", LicenseObj.MIT)
-                        .getLincense());
-        lincense.append(
+                        .getLicense());
+        license.append(
                 new LicenseObj("HoloColorPicker", "Lars Werkman", "2012", LicenseObj.APACHE)
-                        .getLincense());
-        lincense.append(
+                        .getLicense());
+        license.append(
                 new LicenseObj("uCrop", "Yalantis", "2016", LicenseObj.APACHE)
-                        .getLincense());
-        ((TextView) findViewById(R.id.TV_about_text)).setText(lincense.toString());
+                        .getLicense());
+        license.append(
+                new LicenseObj("CircleImageView", "Henning Dodenhof", "2014 - 2016", LicenseObj.APACHE)
+                        .getLicense());
+        license.append(
+                new LicenseObj("pinyin4j", "Li Min", "2006", LicenseObj.GPLv2)
+                        .getLicense());
+        ((TextView) findViewById(R.id.TV_about_text)).setText(license.toString());
     }
 
     public class LicenseObj {
 
         public final static int MIT = 0;
         public final static int APACHE = 1;
+        public final static int GPLv2 = 2;
 
         private String softwareName;
         private String author;
@@ -55,7 +66,7 @@ public class AboutActivity extends AppCompatActivity {
             this.license = license;
         }
 
-        public String getLincense() {
+        public String getLicense() {
             switch (license) {
                 case MIT:
                     return "\n==" + softwareName + "==\n\n" +
@@ -93,6 +104,23 @@ public class AboutActivity extends AppCompatActivity {
                             "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" +
                             "See the License for the specific language governing permissions and\n" +
                             "limitations under the License." +
+                            "\n\n=====\n";
+                case GPLv2:
+                    return "\n==" + softwareName + "==\n\n" +
+                            "copyright " + year + ", " + author + "\n\n" +
+                            "This program is free software; you can redistribute it and/or\n" +
+                            "modify it under the terms of the GNU General Public License\n" +
+                            "as published by the Free Software Foundation; either version 2\n" +
+                            "of the License, or (at your option) any later version.\n" +
+                            "\n" +
+                            "This program is distributed in the hope that it will be useful,\n" +
+                            "but WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
+                            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n" +
+                            "GNU General Public License for more details.\n" +
+                            "\n" +
+                            "You should have received a copy of the GNU General Public License\n" +
+                            "along with this program; if not, write to the Free Software\n" +
+                            "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n" +
                             "\n\n=====\n";
                 default:
                     return "";

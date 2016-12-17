@@ -45,23 +45,24 @@ so, maybe I will try to create an iOS version after this app is running.
 * Allow changing diary time
 * Main Setting page
 * More theme , More profile
+* Add profile picture
 
-## Schedule
+**Not Work:**
 
 This list is what functionality I will implement , the number is the sequence for coding.
 
-1. Add Avatar
-2. Add web block in diary
-3. Allow order for topic , memo
-4. OOBE (Alpha) 
-5. Google account backup & setting page
-6. page curl effect
+1. Add web block in diary
+2. Allow order for topic , memo
+3. OOBE (Alpha) 
+4. Google account backup & setting page
+5. page curl effect
+6. UI review & support xxxHpdi \
 7. Implments search
 8. Support Chinese sort
-9. Add password (beta)
-10. Tags
-11. UI review & support xxxHpdi \
-12. Add contacts from phone
+9. Modify contacts detail
+10. Add password (beta)
+11. Tags
+12. load contacts from phone
 13. Add bookmark for diary
 14. Add music in diary
 15. Supprot JP sort
@@ -70,10 +71,24 @@ Coding & Designing:
 
 1. Add mistake-proofing
 
+**Plan**
+
+Some function will be implemented later ,but some user is asking about them.
+If you want to help this project , you can select them first and let me know:
+
+1. order for topic , memo (use  MemoEntry.COLUMN_ORDER & TopicEntry.COLUMN_ORDER)
+2. page curl effect in calendar(ref: [1](https://github.com/harism/android_page_curl) [2](http://blog.csdn.net/aigestudio/article/details/42678541) )
+3. Implments search in MainActivity , ContactsActivity
+4. load contacts from phone
+5. Add password (4 number , save it in sharedpreference after decoding)
+6. Add border radius in all dialogfragment 
+7. Add GPS loading status bar and test GPS issue in China
+
 ## known issue
 
-* Some problem for selecting image file on Xiaomi
-
+* ~~Some problem for selecting image file on Xiaomi~~
+* requesting permissions dialog fail on HTC D820t [API 23], HUAWEI honor 7i [API 22]   
+* The callback will be null in DiaryPhotoBottomSheet on ZenFone C & HTC Desire 626  
 
 ## Use case
 

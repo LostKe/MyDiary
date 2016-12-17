@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -179,11 +178,7 @@ public class TopicDetailDialogFragment extends DialogFragment implements View.On
                     && PermissionHelper.checkAllPermissionResult(grantResults)) {
                 FileManager.startBrowseImageFile(this, SELECT_TOPIC_BG);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                        .setTitle(getString(R.string.diary_location_permission_title))
-                        .setMessage(getString(R.string.diary_photo_permission_content))
-                        .setPositiveButton(getString(R.string.dialog_button_ok), null);
-                builder.show();
+                PermissionHelper.showAddPhotoDialog(getActivity());
             }
         }
     }
@@ -204,9 +199,13 @@ public class TopicDetailDialogFragment extends DialogFragment implements View.On
                     FileManager tempFileManager = new FileManager(getContext(), FileManager.TEMP_DIR);
                     //Clear the old photo file
                     tempFileManager.clearDiaryDir();
+                    UCrop.Options options = new UCrop.Options();
+                    options.setToolbarColor(ThemeManager.getInstance().getThemeMainColor(getActivity()));
+                    options.setStatusBarColor(ThemeManager.getInstance().getThemeDarkColor(getActivity()));
                     UCrop.of(data.getData(), Uri.fromFile(new File(tempFileManager.getDiaryDir() + "/" + FileManager.createRandomFileName())))
                             .withMaxResultSize(topicBgWidth, topicBgHeight)
                             .withAspectRatio(topicBgWidth, topicBgHeight)
+                            .withOptions(options)
                             .start(getActivity(), this);
                 } else {
                     Toast.makeText(getActivity(), getString(R.string.toast_photo_intent_error), Toast.LENGTH_LONG).show();

@@ -10,12 +10,8 @@ import com.kiminonawa.mydiary.db.DBManager;
 import com.kiminonawa.mydiary.entries.diary.DiaryInfoHelper;
 import com.kiminonawa.mydiary.entries.diary.item.IDairyRow;
 import com.kiminonawa.mydiary.main.topic.ITopic;
-import com.kiminonawa.mydiary.shared.FileManager;
+import com.kiminonawa.mydiary.shared.OldVersionHelper;
 import com.kiminonawa.mydiary.shared.SPFManager;
-
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
 
 /**
  * Version History
@@ -53,7 +49,7 @@ public class InitTask extends AsyncTask<Long, Void, Boolean> {
         try {
             loadSampleData();
             if (SPFManager.getVersionCode(mContext) < 17) {
-                Version17MoveTheDiaryIntoNewDir();
+                OldVersionHelper.Version17MoveTheDiaryIntoNewDir(mContext);
             }
             saveCurrentVersionCode();
         } catch (Exception e) {
@@ -83,11 +79,11 @@ public class InitTask extends AsyncTask<Long, Void, Boolean> {
                 dbManager.insertMemo("女子にも触るな！", false, mitsuhaMemoId);
                 dbManager.insertMemo("男子に触るな！", false, mitsuhaMemoId);
                 dbManager.insertMemo("脚をひらくな！", true, mitsuhaMemoId);
-                dbManager.insertMemo("体は見ない/触らない！！", false, mitsuhaMemoId);
+                dbManager.insertMemo("体は見ない！/触らない！！", false, mitsuhaMemoId);
                 dbManager.insertMemo("お風呂ぜっっったい禁止！！！！！！！", true, mitsuhaMemoId);
             }
             if (takiMemoId != -1) {
-                dbManager.insertMemo("司とベタベタする.....", true, takiMemoId);
+                dbManager.insertMemo("司とベタベタするな.....", true, takiMemoId);
                 dbManager.insertMemo("奧寺先輩と馴れ馴れしくするな.....", true, takiMemoId);
                 dbManager.insertMemo("女言葉NG！", false, takiMemoId);
                 dbManager.insertMemo("遅刻するな！", true, takiMemoId);
@@ -110,7 +106,7 @@ public class InitTask extends AsyncTask<Long, Void, Boolean> {
         //Contacts function work in version 10
         if (SPFManager.getVersionCode(mContext) < 10) {
             //Insert sample contacts
-            long sampleContactsId = dbManager.insertTopic("緊急狀況以外不要聯絡", ITopic.TYPE_CONTACTS, Color.BLACK);
+            long sampleContactsId = dbManager.insertTopic("緊急時以外かけちゃダメ！", ITopic.TYPE_CONTACTS, Color.BLACK);
 
             //Insert sample contacts
             if (sampleContactsId != -1) {
@@ -127,17 +123,5 @@ public class InitTask extends AsyncTask<Long, Void, Boolean> {
             showReleaseNote = true;
             SPFManager.setVersionCode(mContext);
         }
-    }
-
-    private void Version17MoveTheDiaryIntoNewDir() throws Exception {
-        FileManager rootFileManager = new FileManager(mContext, FileManager.ROOT_DIR);
-        File[] dataFiles = rootFileManager.getDiaryDir().listFiles();
-        for (int i = 0; i < dataFiles.length; i++) {
-            if (FileManager.isNumeric(dataFiles[i].getName())) {
-                FileUtils.moveDirectoryToDirectory(dataFiles[i], new FileManager(mContext, FileManager.DIARY_ROOT_DIR).getDiaryDir(), true);
-            }
-        }
-        //Remove the diary/temp/
-        FileUtils.deleteDirectory(new File(new FileManager(mContext, FileManager.DIARY_ROOT_DIR).getDiaryDirAbsolutePath() + "/temp"));
     }
 }

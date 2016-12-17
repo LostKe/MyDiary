@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -46,9 +47,11 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
      * UI
      */
     private LinearLayout LL_calendar_content;
-    private RelativeLayout RL_calendar_content_bg, RL_calendar_edit_bar;
+    private RelativeLayout  RL_calendar_edit_bar;
     private View View_calendar_content_shadow;
     private TextView TV_calendar_months, TV_calendar_date, TV_calendar_day;
+
+
 
     public CalendarFragment() {
         // Required empty public constructor
@@ -60,6 +63,7 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
         calendar = Calendar.getInstance();
         currentDate = new Date();
         calendar.setTime(currentDate);
+        miniTouchGestureWidth = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         timeTools = TimeTools.getInstance(getActivity().getApplicationContext());
         themeManager = ThemeManager.getInstance();
         initAnimation();
@@ -69,9 +73,6 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_cnlendar, container, false);
-
-        RL_calendar_content_bg = (RelativeLayout) rootView.findViewById(R.id.RL_calendar_content_bg);
-        RL_calendar_content_bg.setBackgroundColor(themeManager.getThemeMainColor(getActivity()));
 
         RL_calendar_edit_bar = (RelativeLayout) rootView.findViewById(R.id.RL_calendar_edit_bar);
         RL_calendar_edit_bar.setBackgroundColor(themeManager.getThemeMainColor(getActivity()));
@@ -90,6 +91,7 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
         updateCalendar();
 
         LL_calendar_content.setOnTouchListener(canlderOnTouchListener);
+
 
         return rootView;
     }
@@ -140,22 +142,41 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
 
     private View.OnTouchListener canlderOnTouchListener = new View.OnTouchListener() {
         private float initialTouchX;
-
+        private float initialTouchY;
+        private float dx;
+        private float dy;
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     v.getParent().requestDisallowInterceptTouchEvent(true);
                     initialTouchX = event.getRawX();
+                    initialTouchY = event.getRawY();
                     break;
                 case MotionEvent.ACTION_UP:
-                    if ((initialTouchX - event.getRawX()) > miniTouchGestureWidth) {
-                        dateChange = 1;
-                        startAnimation();
-                    } else if ((initialTouchX - event.getRawX()) < (-miniTouchGestureWidth)) {
-                        dateChange = -1;
-                        startAnimation();
+
+                    dx=initialTouchX-event.getRawX();
+                    dy=initialTouchY-event.getRawY();
+
+                    if(Math.abs(dx)>=Math.abs(dy)){
+                        if (dx > miniTouchGestureWidth) {
+                            //move right
+                            dateChange = -1;
+
+                        } else if (dx < (-miniTouchGestureWidth)) {
+                            //move left
+                            dateChange = 1;
+                        }
+                    }else{
+                        if (dy> miniTouchGestureWidth) {
+                            //move up
+                            dateChange = -1;
+                        } else if (dy < (-miniTouchGestureWidth)) {
+                            //move down
+                            dateChange = 1;
+                        }
                     }
+                    startAnimation();
                     v.getParent().requestDisallowInterceptTouchEvent(false);
 
                     break;
@@ -166,4 +187,6 @@ public class CalendarFragment extends BaseDiaryFragment implements Animation.Ani
             return true;
         }
     };
+
+
 }

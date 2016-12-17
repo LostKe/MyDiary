@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -18,10 +17,12 @@ import android.widget.Toast;
 import com.kiminonawa.mydiary.R;
 import com.kiminonawa.mydiary.shared.ColorTools;
 import com.kiminonawa.mydiary.shared.FileManager;
+import com.kiminonawa.mydiary.shared.OldVersionHelper;
 import com.kiminonawa.mydiary.shared.PermissionHelper;
 import com.kiminonawa.mydiary.shared.SPFManager;
 import com.kiminonawa.mydiary.shared.ScreenHelper;
 import com.kiminonawa.mydiary.shared.ThemeManager;
+import com.kiminonawa.mydiary.shared.statusbar.ChinaPhoneHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -64,12 +65,16 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     private Spinner SP_setting_theme, SP_setting_language;
     private ImageView IV_setting_profile_bg, IV_setting_theme_main_color, IV_setting_theme_dark_color;
     private Button But_setting_theme_default_bg, But_setting_theme_default, But_setting_theme_apply;
+    private Button But_setting_fix_photo_17_dir;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
+        //For set status bar
+        ChinaPhoneHelper.setStatusBar(this, true);
+
 
         themeManager = ThemeManager.getInstance();
         //Create fileManager for get temp folder
@@ -86,6 +91,10 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         But_setting_theme_apply.setOnClickListener(this);
 
         SP_setting_language = (Spinner) findViewById(R.id.SP_setting_language);
+
+        But_setting_fix_photo_17_dir = (Button) findViewById(R.id.But_setting_fix_photo_17_dir);
+        But_setting_fix_photo_17_dir.setOnClickListener(this);
+
         initSpinner();
         initTheme(themeManager.getCurrentTheme());
         initLanguage();
@@ -98,9 +107,13 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                 if (data != null && data.getData() != null) {
                     //Compute the bg size
                     int bgWidth = ScreenHelper.getScreenWidth(this);
-                    int bgHeight = ScreenHelper.dpToPixel(getResources(), 80);
+                    int bgHeight = getResources().getDimensionPixelOffset(R.dimen.top_bar_height);
+                    UCrop.Options options = new UCrop.Options();
+                    options.setToolbarColor(ThemeManager.getInstance().getThemeMainColor(this));
+                    options.setStatusBarColor(ThemeManager.getInstance().getThemeDarkColor(this));
                     UCrop.of(data.getData(), Uri.fromFile(new File(tempFileManager.getDiaryDir() + "/" + FileManager.createRandomFileName())))
                             .withMaxResultSize(bgWidth, bgHeight)
+                            .withOptions(options)
                             .withAspectRatio(bgWidth, bgHeight)
                             .start(this);
                 } else {
@@ -131,11 +144,7 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                     && PermissionHelper.checkAllPermissionResult(grantResults)) {
                 FileManager.startBrowseImageFile(this, SELECT_PROFILE_BG);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.diary_location_permission_title))
-                        .setMessage(getString(R.string.diary_photo_permission_content))
-                        .setPositiveButton(getString(R.string.dialog_button_ok), null);
-                builder.show();
+                PermissionHelper.showAddPhotoDialog(this);
             }
         }
     }
@@ -279,6 +288,8 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                                 Toast.makeText(this, getString(R.string.toast_save_profile_banner_fail), Toast.LENGTH_SHORT).show();
                                 break;
                             }
+                        } else {
+                            new File(new FileManager(this, FileManager.SETTING_DIR).getDiaryDir().getAbsoluteFile() + "/" + ThemeManager.CUSTOM_PROFILE_BANNER_BG_FILENAME).delete();
                         }
                         SPFManager.setCustomProfileBannerBg(this, hasCustomProfileBannerBg);
                     }
@@ -306,7 +317,37 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
                 secColorPickerFragment.setCallBack(this, R.id.IV_setting_theme_dark_color);
                 secColorPickerFragment.show(getSupportFragmentManager(), "secColorPickerFragment");
                 break;
-
+            case R.id.But_setting_fix_photo_17_dir:
+                //The new diary dir was updated in version 17
+                //But , some device have a problem , so I add this setting.
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (OldVersionHelper.Version17MoveTheDiaryIntoNewDir(SettingActivity.this)) {
+                                SettingActivity.this.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        Toast.makeText(SettingActivity.this, getString(R.string.toast_setting_successful), Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            } else {
+                                SettingActivity.this.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        Toast.makeText(SettingActivity.this, getString(R.string.toast_setting_wont_fix), Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            SettingActivity.this.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(SettingActivity.this, getString(R.string.toast_setting_fail), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+                }).run();
+                break;
         }
 
     }

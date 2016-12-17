@@ -38,20 +38,22 @@ public class InitActivity extends Activity implements InitTask.InitCallBack {
         TV_init_message = (TextView) findViewById(R.id.TV_init_message);
 
         //Init photo value
+        //topbar height
+        int topbarHeight = getResources().getDimensionPixelOffset(R.dimen.top_bar_height);
         //topic bg
         int bgWeight = ScreenHelper.getScreenWidth(InitActivity.this);
         int bgHeight = ScreenHelper.getScreenHeight(InitActivity.this) -
                 //diary activity top bar  + edit bottom bar
-                ScreenHelper.dpToPixel(getResources(), 80 + 40);
+                ScreenHelper.dpToPixel(getResources(), 40) - topbarHeight;
         int withoutEditBarHeight = ScreenHelper.getScreenHeight(InitActivity.this) -
                 //diary activity top bar
-                ScreenHelper.dpToPixel(getResources(), 80);
+                topbarHeight;
         ThemeManager.getInstance().setBgSize(bgWeight, bgHeight, withoutEditBarHeight);
 
         //Diary photo size
-        int imageHeight = ScreenHelper.getScreenHeight(InitActivity.this) -
-                //diary activity top bar + diary info + diary button bar + padding
-                ScreenHelper.dpToPixel(getResources(), 80 + 120 + 40 + (2 * 5));
+        int imageHeight = ScreenHelper.getScreenHeight(InitActivity.this)
+                //diary activity top bar  -( diary info + diary button bar + padding)
+                - topbarHeight - ScreenHelper.dpToPixel(getResources(), 120 + 40 + (2 * 5));
         int imageWeight = ScreenHelper.getScreenWidth(InitActivity.this) -
                 ScreenHelper.dpToPixel(getResources(), 2 * 5);
         DiaryItemHelper.setVisibleArea(imageWeight, imageHeight);
@@ -93,6 +95,9 @@ public class InitActivity extends Activity implements InitTask.InitCallBack {
                 break;
             case 4:
                 locale = Locale.SIMPLIFIED_CHINESE;
+                break;
+            case 5:
+                locale = Locale.KOREAN;
                 break;
             // 0 = default = language of system
             default:

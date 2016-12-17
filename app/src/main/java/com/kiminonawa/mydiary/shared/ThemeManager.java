@@ -27,6 +27,7 @@ public class ThemeManager {
     public final static int CUSTOM = 2;
 
     public final static String CUSTOM_PROFILE_BANNER_BG_FILENAME = "custom_profile_banner_bg";
+    public final static String CUSTOM_PROFILE_PICTURE_FILENAME = "custom_profile_picture_bg";
     public final static String CUSTOM_TOPIC_BG_FILENAME = "custom_topic_bg";
 
 
@@ -93,15 +94,30 @@ public class ThemeManager {
                 bgDrawable = ViewTools.getDrawable(context, R.drawable.profile_theme_bg_mitsuha);
                 break;
             default:
-                bgDrawable = Drawable.createFromPath(
-                        new FileManager(context, FileManager.SETTING_DIR).getDiaryDir().getPath() + "/" + CUSTOM_PROFILE_BANNER_BG_FILENAME);
-                if (bgDrawable == null) {
+                File profileBgFile = new File(new FileManager(context, FileManager.SETTING_DIR).getDiaryDir().getPath()
+                        + "/" + CUSTOM_PROFILE_BANNER_BG_FILENAME);
+                if (profileBgFile.exists()) {
+                    bgDrawable = Drawable.createFromPath(profileBgFile.getAbsolutePath());
+                } else {
                     bgDrawable = new ColorDrawable(getThemeMainColor(context));
                 }
                 break;
         }
         return bgDrawable;
     }
+
+    public Drawable getProfilePictureDrawable(Context context) {
+        Drawable pictureDrawable;
+        File pictureFile = new File(new FileManager(context, FileManager.SETTING_DIR).getDiaryDir().getAbsolutePath()
+                + "/" + CUSTOM_PROFILE_PICTURE_FILENAME);
+        if (pictureFile.exists()) {
+            pictureDrawable = Drawable.createFromPath(pictureFile.getAbsolutePath());
+        } else {
+            pictureDrawable = ViewTools.getDrawable(context, R.drawable.ic_person_picture_default);
+        }
+        return pictureDrawable;
+    }
+
 
     public Drawable getTopicItemSelectDrawable(Context context) {
         return createTopicItemSelectBg(context);
